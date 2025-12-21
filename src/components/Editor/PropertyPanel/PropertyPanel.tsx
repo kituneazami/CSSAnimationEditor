@@ -1,7 +1,8 @@
-import { useAnimationStore, useUIStore } from '@/store';
+import { useAnimationStore, useUIStore, useLayerStore } from '@/store';
 import { TIMING_FUNCTIONS } from '@/constants/timingFunctions';
 import { TransformEditor } from './TransformEditor';
 import { FilterEditor } from './FilterEditor';
+import { ElementEditor } from './ElementEditor';
 
 export function PropertyPanel() {
   const selectedAnimation = useAnimationStore((state) =>
@@ -10,15 +11,17 @@ export function PropertyPanel() {
   const updateAnimation = useAnimationStore((state) => state.updateAnimation);
   const selectedKeyframeId = useUIStore((state) => state.selectedKeyframeId);
   const updateKeyframe = useAnimationStore((state) => state.updateKeyframe);
+  const selectedLayer = useLayerStore((state) => state.getSelectedLayer());
+  const updateLayer = useLayerStore((state) => state.updateLayer);
 
-  if (!selectedAnimation) {
+  if (!selectedAnimation && !selectedLayer) {
     return (
       <aside className="w-80 bg-white border-l border-gray-200 p-4">
         <div className="panel">
           <div className="panel-header">Properties</div>
           <div className="panel-body">
             <p className="text-gray-500 text-sm">
-              Select an animation to edit properties
+              Select a layer or animation to edit properties
             </p>
           </div>
         </div>
@@ -26,17 +29,33 @@ export function PropertyPanel() {
     );
   }
 
-  const selectedKeyframe = selectedKeyframeId
+  const selectedKeyframe = selectedKeyframeId && selectedAnimation
     ? selectedAnimation.keyframes.find((kf) => kf.id === selectedKeyframeId)
     : null;
 
   return (
     <aside className="w-80 bg-white border-l border-gray-200 p-4 overflow-auto">
       <div className="space-y-4">
+        {/* Element Content Editor */}
+        {selectedLayer && (
+          <div className="panel">
+            <div className="panel-header">Element Settings</div>
+            <div className="panel-body">
+              <ElementEditor
+                element={selectedLayer.element}
+                onChange={(element) =>
+                  updateLayer(selectedLayer.id, { element })
+                }
+              />
+            </div>
+          </div>
+        )}
+
         {/* Animation Properties */}
-        <div className="panel">
-          <div className="panel-header">Animation Settings</div>
-          <div className="panel-body space-y-4">
+        {selectedAnimation && (
+          <div className="panel">
+            <div className="panel-header">Animation Settings</div>
+            <div className="panel-body space-y-4">
             <div>
               <label className="block text-sm font-medium mb-2">
                 Animation Name
@@ -184,9 +203,10 @@ export function PropertyPanel() {
             </div>
           </div>
         </div>
+        )}
 
         {/* Keyframe Properties */}
-        {selectedKeyframe && (
+        {selectedAnimation && selectedKeyframe && (
           <div className="panel">
             <div className="panel-header">Keyframe Properties</div>
             <div className="panel-body space-y-4">

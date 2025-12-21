@@ -19,6 +19,7 @@ export const DEFAULT_PROJECT_SETTINGS: ProjectSettings = {
 };
 
 export const DEFAULT_ELEMENT = {
+  type: 'box' as const,
   tagName: 'div',
   className: 'animated-element',
   styles: {

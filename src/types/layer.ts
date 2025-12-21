@@ -10,9 +10,13 @@ export interface Layer {
   zIndex: number;
 }
 
+export type ElementType = 'box' | 'text' | 'image';
+
 export interface ElementDefinition {
+  type: ElementType;
   tagName: string;
   className?: string;
   styles?: React.CSSProperties;
   content?: string;
+  imageUrl?: string;
 }

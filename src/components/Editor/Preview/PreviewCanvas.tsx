@@ -83,6 +83,42 @@ export function PreviewCanvas() {
             animationStyle = parts.join(' ');
           }
 
+          // Render different element types
+          const renderContent = () => {
+            switch (element.type) {
+              case 'text':
+                return (
+                  <div
+                    style={{
+                      ...element.styles,
+                      fontSize: element.styles?.fontSize || '24px',
+                      color: element.styles?.color || '#000000',
+                      fontFamily: element.styles?.fontFamily || 'sans-serif',
+                      whiteSpace: 'pre-wrap',
+                    }}
+                  >
+                    {element.content || 'Sample Text'}
+                  </div>
+                );
+              case 'image':
+                return (
+                  <img
+                    src={element.imageUrl || 'https://via.placeholder.com/150'}
+                    alt={element.content || 'Animation element'}
+                    style={{
+                      ...element.styles,
+                      maxWidth: element.styles?.width || '150px',
+                      maxHeight: element.styles?.height || '150px',
+                      objectFit: 'contain',
+                    }}
+                  />
+                );
+              case 'box':
+              default:
+                return element.content;
+            }
+          };
+
           return (
             <div
               key={layer.id}
@@ -91,12 +127,12 @@ export function PreviewCanvas() {
                 isSelected && 'ring-2 ring-primary-500'
               )}
               style={{
-                ...element.styles,
+                ...(element.type === 'box' ? element.styles : {}),
                 zIndex: layer.zIndex,
                 animation: animationStyle || undefined,
               }}
             >
-              {element.content}
+              {renderContent()}
             </div>
           );
         })}
