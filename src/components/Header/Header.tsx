@@ -60,8 +60,8 @@ export function Header() {
 
   const handleQuickStart = () => {
     // Quick start: create a layer and animation
-    addLayer();
-    addAnimation({
+    const layerId = addLayer();
+    const animationId = addAnimation({
       name: 'fadeIn',
       duration: 1000,
       timingFunction: 'ease-in-out',
@@ -82,6 +82,12 @@ export function Header() {
         },
       ],
     });
+
+    // Assign animation to layer
+    const animation = useAnimationStore.getState().getAnimation(animationId);
+    if (animation) {
+      useLayerStore.getState().assignAnimation(layerId, animation);
+    }
   };
 
   return (

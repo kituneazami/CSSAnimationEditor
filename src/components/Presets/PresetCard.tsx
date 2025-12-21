@@ -1,5 +1,5 @@
 import type { AnimationPreset } from '@/constants/presets';
-import { useAnimationStore } from '@/store';
+import { useAnimationStore, useLayerStore } from '@/store';
 
 interface PresetCardProps {
   preset: AnimationPreset;
@@ -8,16 +8,30 @@ interface PresetCardProps {
 
 export function PresetCard({ preset, onApply }: PresetCardProps) {
   const addAnimation = useAnimationStore((state) => state.addAnimation);
+  const selectedLayerId = useLayerStore((state) => state.selectedLayerId);
+  const addLayer = useLayerStore((state) => state.addLayer);
 
   const handleApply = () => {
     // Generate unique IDs for the animation and keyframes
-    addAnimation({
+    const animationId = addAnimation({
       ...preset.animation,
       keyframes: preset.animation.keyframes.map((kf, idx) => ({
         ...kf,
         id: `kf-${Date.now()}-${idx}`,
       })),
     });
+
+    // Get or create layer
+    let layerId = selectedLayerId;
+    if (!layerId) {
+      layerId = addLayer();
+    }
+
+    // Assign animation to layer
+    const animation = useAnimationStore.getState().getAnimation(animationId);
+    if (animation) {
+      useLayerStore.getState().assignAnimation(layerId, animation);
+    }
 
     onApply?.();
   };
