@@ -4,6 +4,7 @@ import { Preview } from './Editor/Preview';
 import { Timeline } from './Editor/Timeline';
 import { PropertyPanel } from './Editor/PropertyPanel';
 import { CodeViewer } from './Editor/CodeViewer';
+import { PresetLibrary } from './Presets';
 
 function App() {
   return (
@@ -22,6 +23,8 @@ function App() {
       </main>
 
       <CodeViewer />
+
+      <PresetLibrary />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useProjectStore, useAnimationStore, useLayerStore } from '@/store';
+import { useProjectStore, useAnimationStore, useLayerStore, useUIStore } from '@/store';
 
 export function Header() {
   const project = useProjectStore((state) => state.project);
@@ -11,6 +11,7 @@ export function Header() {
   );
   const addAnimation = useAnimationStore((state) => state.addAnimation);
   const addLayer = useLayerStore((state) => state.addLayer);
+  const togglePresetLibrary = useUIStore((state) => state.togglePresetLibrary);
 
   const handleNew = () => {
     if (confirm('Create new project? Unsaved changes will be lost.')) {
@@ -90,6 +91,9 @@ export function Header() {
           CSS Animation Editor
         </h1>
         <div className="flex gap-2">
+          <button onClick={togglePresetLibrary} className="btn btn-secondary">
+            Presets
+          </button>
           <button onClick={handleNew} className="btn btn-secondary">
             New Project
           </button>

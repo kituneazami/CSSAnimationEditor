@@ -1,5 +1,7 @@
 import { useAnimationStore, useUIStore } from '@/store';
 import { TIMING_FUNCTIONS } from '@/constants/timingFunctions';
+import { TransformEditor } from './TransformEditor';
+import { FilterEditor } from './FilterEditor';
 
 export function PropertyPanel() {
   const selectedAnimation = useAnimationStore((state) =>
@@ -256,9 +258,39 @@ export function PropertyPanel() {
               </div>
 
               <div className="pt-4 border-t">
-                <p className="text-sm text-gray-600 mb-2">
-                  More property editors coming soon...
-                </p>
+                <TransformEditor
+                  value={(selectedKeyframe.properties.transform as any) || {}}
+                  onChange={(transform) =>
+                    updateKeyframe(
+                      selectedAnimation.id,
+                      selectedKeyframe.id,
+                      {
+                        properties: {
+                          ...selectedKeyframe.properties,
+                          transform,
+                        },
+                      }
+                    )
+                  }
+                />
+              </div>
+
+              <div className="pt-4 border-t">
+                <FilterEditor
+                  value={(selectedKeyframe.properties.filter as string) || ''}
+                  onChange={(filter) =>
+                    updateKeyframe(
+                      selectedAnimation.id,
+                      selectedKeyframe.id,
+                      {
+                        properties: {
+                          ...selectedKeyframe.properties,
+                          filter,
+                        },
+                      }
+                    )
+                  }
+                />
               </div>
             </div>
           </div>

@@ -1,21 +1,40 @@
 import { useEffect, useRef } from 'react';
 import { useLayerStore, useUIStore } from '@/store';
+import { generateKeyframesCSS } from '@/utils/cssGenerator';
 import clsx from 'clsx';
 
 export function PreviewCanvas() {
   const canvasRef = useRef<HTMLDivElement>(null);
+  const styleRef = useRef<HTMLStyleElement | null>(null);
   const layers = useLayerStore((state) => state.layers);
   const selectedLayerId = useLayerStore((state) => state.selectedLayerId);
   const showGrid = useUIStore((state) => state.showGrid);
   const isPlaying = useUIStore((state) => state.isPlaying);
-  const currentTime = useUIStore((state) => state.currentTime);
 
+  // Generate and inject CSS keyframes for all animations
   useEffect(() => {
-    if (!isPlaying) return;
+    // Create or get style element
+    if (!styleRef.current) {
+      styleRef.current = document.createElement('style');
+      styleRef.current.id = 'animation-preview-styles';
+      document.head.appendChild(styleRef.current);
+    }
 
-    // Animation loop will be implemented here
-    // For now, just a placeholder
-  }, [isPlaying, currentTime]);
+    // Generate CSS for all animations
+    const cssRules = layers
+      .filter((layer) => layer.animation)
+      .map((layer) => generateKeyframesCSS(layer.animation!))
+      .join('\n\n');
+
+    styleRef.current.textContent = cssRules;
+
+    return () => {
+      if (styleRef.current && document.head.contains(styleRef.current)) {
+        document.head.removeChild(styleRef.current);
+        styleRef.current = null;
+      }
+    };
+  }, [layers]);
 
   return (
     <div
@@ -46,21 +65,35 @@ export function PreviewCanvas() {
         .map((layer) => {
           const isSelected = layer.id === selectedLayerId;
           const element = layer.element;
+          const animation = layer.animation;
+
+          // Build animation CSS property
+          let animationStyle = '';
+          if (animation && isPlaying) {
+            const parts = [
+              animation.name,
+              `${animation.duration}ms`,
+              animation.timingFunction,
+              `${animation.delay}ms`,
+              animation.iterationCount,
+              animation.direction,
+              animation.fillMode,
+              'running', // play state
+            ];
+            animationStyle = parts.join(' ');
+          }
 
           return (
             <div
               key={layer.id}
               className={clsx(
-                'absolute',
+                'absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2',
                 isSelected && 'ring-2 ring-primary-500'
               )}
               style={{
                 ...element.styles,
                 zIndex: layer.zIndex,
-                // Animation will be applied here
-                animation: layer.animation
-                  ? `${layer.animation.name} ${layer.animation.duration}ms ${layer.animation.timingFunction}`
-                  : undefined,
+                animation: animationStyle || undefined,
               }}
             >
               {element.content}
