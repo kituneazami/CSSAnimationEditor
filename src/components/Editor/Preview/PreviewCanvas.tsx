@@ -90,7 +90,7 @@ export function PreviewCanvas() {
               `${adjustedDuration}ms`,
               animation.timingFunction,
               `${adjustedDelay}ms`,
-              animation.iterationCount,
+              loop ? 'infinite' : animation.iterationCount,
               animation.direction,
               animation.fillMode,
               isPlaying ? 'running' : 'paused', // play state
