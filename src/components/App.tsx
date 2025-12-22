@@ -3,7 +3,6 @@ import { LayerPanel } from './Editor/LayerPanel';
 import { Preview } from './Editor/Preview';
 import { Timeline } from './Editor/Timeline';
 import { PropertyPanel } from './Editor/PropertyPanel';
-import { CodeViewer } from './Editor/CodeViewer';
 import { PresetLibrary } from './Presets';
 
 function App() {
@@ -21,8 +20,6 @@ function App() {
 
         <PropertyPanel />
       </main>
-
-      <CodeViewer />
 
       <PresetLibrary />
     </div>

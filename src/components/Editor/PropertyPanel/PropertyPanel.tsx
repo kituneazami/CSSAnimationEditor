@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { useAnimationStore, useUIStore, useLayerStore } from '@/store';
 import { TIMING_FUNCTIONS } from '@/constants/timingFunctions';
 import { TransformEditor } from './TransformEditor';
 import { FilterEditor } from './FilterEditor';
 import { ElementEditor } from './ElementEditor';
+import { generateFullCSS } from '@/utils/cssGenerator';
 
 export function PropertyPanel() {
   const selectedAnimation = useAnimationStore((state) =>
@@ -13,10 +15,12 @@ export function PropertyPanel() {
   const updateKeyframe = useAnimationStore((state) => state.updateKeyframe);
   const selectedLayer = useLayerStore((state) => state.getSelectedLayer());
   const updateLayer = useLayerStore((state) => state.updateLayer);
+  const [isCodeExpanded, setIsCodeExpanded] = useState(true);
+  const [copied, setCopied] = useState(false);
 
   if (!selectedAnimation && !selectedLayer) {
     return (
-      <aside className="w-80 bg-white border-l border-gray-200 p-4">
+      <aside className="w-96 bg-white border-l border-gray-200 p-4">
         <div className="panel">
           <div className="panel-header">Properties</div>
           <div className="panel-body">
@@ -34,7 +38,7 @@ export function PropertyPanel() {
     : null;
 
   return (
-    <aside className="w-80 bg-white border-l border-gray-200 p-4 overflow-auto">
+    <aside className="w-96 bg-white border-l border-gray-200 p-4 overflow-auto">
       <div className="space-y-4">
         {/* Element Content Editor */}
         {selectedLayer && (
@@ -313,6 +317,59 @@ export function PropertyPanel() {
                 />
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Generated CSS Code */}
+        {selectedAnimation && (
+          <div className="panel">
+            <button
+              onClick={() => setIsCodeExpanded(!isCodeExpanded)}
+              className="w-full panel-header flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
+            >
+              <span>Generated CSS</span>
+              <svg
+                className={`w-5 h-5 transition-transform ${
+                  isCodeExpanded ? 'rotate-180' : ''
+                }`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </button>
+            {isCodeExpanded && (
+              <div className="panel-body">
+                <div className="mb-3">
+                  <button
+                    onClick={async () => {
+                      try {
+                        const cssCode = generateFullCSS(selectedAnimation);
+                        await navigator.clipboard.writeText(cssCode);
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 2000);
+                      } catch (err) {
+                        console.error('Failed to copy:', err);
+                      }
+                    }}
+                    className="btn btn-primary w-full"
+                  >
+                    {copied ? 'Copied!' : 'Copy CSS'}
+                  </button>
+                </div>
+                <div className="bg-gray-900 text-gray-100 rounded p-3 overflow-auto max-h-64 font-mono text-xs">
+                  <pre>
+                    <code>{generateFullCSS(selectedAnimation)}</code>
+                  </pre>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
