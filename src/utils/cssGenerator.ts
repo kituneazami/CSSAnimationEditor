@@ -1,4 +1,4 @@
-import type { Animation, Keyframe, Transform } from '@/types';
+import type { Animation, Keyframe, Transform, Layer } from '@/types';
 
 export function generateKeyframesCSS(animation: Animation): string {
   const { name, keyframes } = animation;
@@ -74,4 +74,55 @@ export function generateFullCSS(animation: Animation): string {
 
 function camelToKebab(str: string): string {
   return str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+}
+
+export function generateHTML(layer: Layer): string {
+  const { element, animation } = layer;
+  const className = animation ? 'animated-element' : 'element';
+
+  switch (element.type) {
+    case 'text':
+      return `<div class="${className}">\n  ${element.content || 'Sample Text'}\n</div>`;
+
+    case 'image':
+      const imageUrl = element.imageUrl || 'https://via.placeholder.com/150';
+      const altText = element.content || 'Animation element';
+      return `<img class="${className}" src="${imageUrl}" alt="${altText}">`;
+
+    case 'box':
+    default:
+      return `<div class="${className}">\n  ${element.content || ''}\n</div>`;
+  }
+}
+
+export function generateFullHTML(layers: Layer[]): string {
+  if (layers.length === 0) {
+    return '<!-- No layers defined -->';
+  }
+
+  const visibleLayers = layers.filter(layer => layer.visible);
+
+  if (visibleLayers.length === 0) {
+    return '<!-- No visible layers -->';
+  }
+
+  const htmlElements = visibleLayers
+    .sort((a, b) => a.zIndex - b.zIndex)
+    .map(layer => generateHTML(layer))
+    .join('\n\n');
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSS Animation</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+${htmlElements.split('\n').map(line => line ? '    ' + line : '').join('\n')}
+  </div>
+</body>
+</html>`;
 }

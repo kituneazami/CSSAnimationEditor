@@ -1,25 +1,39 @@
 import { useState } from 'react';
-import { useAnimationStore } from '@/store';
-import { generateFullCSS } from '@/utils/cssGenerator';
+import { useAnimationStore, useLayerStore } from '@/store';
+import { generateFullCSS, generateFullHTML } from '@/utils/cssGenerator';
 
 export function CodeViewer() {
   const selectedAnimation = useAnimationStore((state) =>
     state.getSelectedAnimation()
   );
+  const layers = useLayerStore((state) => state.layers);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [copiedCSS, setCopiedCSS] = useState(false);
+  const [copiedHTML, setCopiedHTML] = useState(false);
 
   const cssCode = selectedAnimation
     ? generateFullCSS(selectedAnimation)
     : '/* Select an animation to see generated CSS */';
 
-  const handleCopy = async () => {
+  const htmlCode = generateFullHTML(layers);
+
+  const handleCopyCSS = async () => {
     try {
       await navigator.clipboard.writeText(cssCode);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      setCopiedCSS(true);
+      setTimeout(() => setCopiedCSS(false), 2000);
     } catch (err) {
-      console.error('Failed to copy:', err);
+      console.error('Failed to copy CSS:', err);
+    }
+  };
+
+  const handleCopyHTML = async () => {
+    try {
+      await navigator.clipboard.writeText(htmlCode);
+      setCopiedHTML(true);
+      setTimeout(() => setCopiedHTML(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy HTML:', err);
     }
   };
 
@@ -34,7 +48,7 @@ export function CodeViewer() {
         <>
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-700">
-            <h3 className="font-semibold">Generated CSS</h3>
+            <h3 className="font-semibold">Generated Code</h3>
             <button
               onClick={() => setIsExpanded(false)}
               className="hover:bg-gray-800 p-1 rounded transition-colors"
@@ -57,18 +71,42 @@ export function CodeViewer() {
           </div>
 
           {/* Content */}
-          <div className="flex-1 flex flex-col p-4 overflow-hidden">
-            <button
-              onClick={handleCopy}
-              className="mb-3 text-sm bg-primary-600 hover:bg-primary-700 px-4 py-2 rounded transition-colors"
-              disabled={!selectedAnimation}
-            >
-              {copied ? 'Copied!' : 'Copy CSS'}
-            </button>
-            <div className="flex-1 bg-gray-800 rounded p-4 overflow-auto font-mono text-xs">
-              <pre>
-                <code>{cssCode}</code>
-              </pre>
+          <div className="flex-1 flex flex-col p-4 overflow-hidden gap-4">
+            {/* CSS Section */}
+            <div className="flex-1 flex flex-col overflow-hidden">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="text-sm font-semibold text-gray-300">CSS</h4>
+                <button
+                  onClick={handleCopyCSS}
+                  className="text-xs bg-primary-600 hover:bg-primary-700 px-3 py-1 rounded transition-colors"
+                  disabled={!selectedAnimation}
+                >
+                  {copiedCSS ? 'Copied!' : 'Copy CSS'}
+                </button>
+              </div>
+              <div className="flex-1 bg-gray-800 rounded p-4 overflow-auto font-mono text-xs">
+                <pre>
+                  <code>{cssCode}</code>
+                </pre>
+              </div>
+            </div>
+
+            {/* HTML Section */}
+            <div className="flex-1 flex flex-col overflow-hidden">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="text-sm font-semibold text-gray-300">HTML</h4>
+                <button
+                  onClick={handleCopyHTML}
+                  className="text-xs bg-primary-600 hover:bg-primary-700 px-3 py-1 rounded transition-colors"
+                >
+                  {copiedHTML ? 'Copied!' : 'Copy HTML'}
+                </button>
+              </div>
+              <div className="flex-1 bg-gray-800 rounded p-4 overflow-auto font-mono text-xs">
+                <pre>
+                  <code>{htmlCode}</code>
+                </pre>
+              </div>
             </div>
           </div>
         </>
@@ -77,10 +115,10 @@ export function CodeViewer() {
         <button
           onClick={() => setIsExpanded(true)}
           className="flex-1 flex items-center justify-center hover:bg-gray-800 transition-colors"
-          title="Expand CSS Panel"
+          title="Expand Code Panel"
         >
           <div className="transform -rotate-90 whitespace-nowrap text-sm font-semibold tracking-wider">
-            CSS
+            CODE
           </div>
         </button>
       )}
