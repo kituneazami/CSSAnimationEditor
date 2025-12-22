@@ -11,6 +11,8 @@ export function PreviewCanvas() {
   const showGrid = useUIStore((state) => state.showGrid);
   const isPlaying = useUIStore((state) => state.isPlaying);
   const playbackSpeed = useUIStore((state) => state.playbackSpeed);
+  const loop = useUIStore((state) => state.loop);
+  const pause = useUIStore((state) => state.pause);
 
   // Generate and inject CSS keyframes for all animations
   useEffect(() => {
@@ -36,6 +38,13 @@ export function PreviewCanvas() {
       }
     };
   }, [layers]);
+
+  // Handle animation end - pause if not looping
+  const handleAnimationEnd = () => {
+    if (!loop && isPlaying) {
+      pause();
+    }
+  };
 
   return (
     <div
@@ -136,6 +145,7 @@ export function PreviewCanvas() {
                 zIndex: layer.zIndex,
                 animation: animationStyle || undefined,
               }}
+              onAnimationEnd={handleAnimationEnd}
             >
               {renderContent()}
             </div>
