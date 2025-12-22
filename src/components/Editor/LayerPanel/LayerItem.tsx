@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useLayerStore } from '@/store';
 import type { Layer } from '@/types';
 import clsx from 'clsx';
@@ -15,16 +16,50 @@ export function LayerItem({ layer }: LayerItemProps) {
   const toggleLayerLock = useLayerStore((state) => state.toggleLayerLock);
   const deleteLayer = useLayerStore((state) => state.deleteLayer);
   const moveLayer = useLayerStore((state) => state.moveLayer);
+  const reorderLayers = useLayerStore((state) => state.reorderLayers);
 
+  const [isDragOver, setIsDragOver] = useState(false);
   const isSelected = selectedLayerId === layer.id;
+
+  const handleDragStart = (e: React.DragEvent) => {
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', layer.id);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+
+    const draggedId = e.dataTransfer.getData('text/plain');
+    if (draggedId && draggedId !== layer.id) {
+      reorderLayers(draggedId, layer.id);
+    }
+  };
 
   return (
     <div
+      draggable
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
       className={clsx(
-        'p-2 rounded border transition-colors cursor-pointer',
+        'p-2 rounded border transition-colors cursor-move',
         isSelected
           ? 'bg-primary-50 border-primary-300'
-          : 'bg-white border-gray-200 hover:bg-gray-50'
+          : 'bg-white border-gray-200 hover:bg-gray-50',
+        isDragOver && 'border-primary-500 border-2 bg-primary-100'
       )}
       onClick={() => selectLayer(layer.id)}
     >

@@ -14,6 +14,7 @@ interface LayerState {
 
   // Layer ordering
   moveLayer: (id: string, direction: 'up' | 'down') => void;
+  reorderLayers: (draggedId: string, targetId: string) => void;
   setLayerZIndex: (id: string, zIndex: number) => void;
 
   // Animation assignment
@@ -84,7 +85,7 @@ export const useLayerStore = create<LayerState>((set, get) => ({
 
       if (index === -1) return state;
 
-      const newIndex = direction === 'up' ? index - 1 : index + 1;
+      const newIndex = direction === 'up' ? index + 1 : index - 1;
 
       if (newIndex < 0 || newIndex >= layers.length) return state;
 
@@ -92,6 +93,29 @@ export const useLayerStore = create<LayerState>((set, get) => ({
       [layers[index], layers[newIndex]] = [layers[newIndex], layers[index]];
 
       // Update zIndex
+      return {
+        layers: layers.map((layer, idx) => ({
+          ...layer,
+          zIndex: idx + 1,
+        })),
+      };
+    });
+  },
+
+  reorderLayers: (draggedId, targetId) => {
+    set((state) => {
+      const layers = [...state.layers];
+      const draggedIndex = layers.findIndex((l) => l.id === draggedId);
+      const targetIndex = layers.findIndex((l) => l.id === targetId);
+
+      if (draggedIndex === -1 || targetIndex === -1) return state;
+      if (draggedIndex === targetIndex) return state;
+
+      // Remove dragged layer and insert at target position
+      const [draggedLayer] = layers.splice(draggedIndex, 1);
+      layers.splice(targetIndex, 0, draggedLayer);
+
+      // Update zIndex for all layers
       return {
         layers: layers.map((layer, idx) => ({
           ...layer,
