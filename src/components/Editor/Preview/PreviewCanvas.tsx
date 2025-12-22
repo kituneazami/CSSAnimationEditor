@@ -10,6 +10,7 @@ export function PreviewCanvas() {
   const selectedLayerId = useLayerStore((state) => state.selectedLayerId);
   const showGrid = useUIStore((state) => state.showGrid);
   const isPlaying = useUIStore((state) => state.isPlaying);
+  const playbackSpeed = useUIStore((state) => state.playbackSpeed);
 
   // Generate and inject CSS keyframes for all animations
   useEffect(() => {
@@ -69,16 +70,20 @@ export function PreviewCanvas() {
 
           // Build animation CSS property
           let animationStyle = '';
-          if (animation && isPlaying) {
+          if (animation) {
+            // Apply playback speed by adjusting duration
+            const adjustedDuration = animation.duration / playbackSpeed;
+            const adjustedDelay = animation.delay / playbackSpeed;
+
             const parts = [
               animation.name,
-              `${animation.duration}ms`,
+              `${adjustedDuration}ms`,
               animation.timingFunction,
-              `${animation.delay}ms`,
+              `${adjustedDelay}ms`,
               animation.iterationCount,
               animation.direction,
               animation.fillMode,
-              'running', // play state
+              isPlaying ? 'running' : 'paused', // play state
             ];
             animationStyle = parts.join(' ');
           }
