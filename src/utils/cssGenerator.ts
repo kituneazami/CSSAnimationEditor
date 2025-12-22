@@ -106,23 +106,8 @@ export function generateFullHTML(layers: Layer[]): string {
     return '<!-- No visible layers -->';
   }
 
-  const htmlElements = visibleLayers
+  return visibleLayers
     .sort((a, b) => a.zIndex - b.zIndex)
     .map(layer => generateHTML(layer))
     .join('\n\n');
-
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CSS Animation</title>
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-  <div class="container">
-${htmlElements.split('\n').map(line => line ? '    ' + line : '').join('\n')}
-  </div>
-</body>
-</html>`;
 }
