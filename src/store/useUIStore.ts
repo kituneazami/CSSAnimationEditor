@@ -6,6 +6,7 @@ interface UIState {
   playbackSpeed: number; // 0.25 - 2
   currentTime: number; // Current playback time in milliseconds
   loop: boolean;
+  playCount: number; // Incremented each time play starts
 
   // Timeline
   timelineZoom: number; // 1 - 5
@@ -53,6 +54,7 @@ const initialState = {
   playbackSpeed: 1,
   currentTime: 0,
   loop: false,
+  playCount: 0,
   timelineZoom: 1,
   selectedKeyframeId: null,
   showLayerPanel: true,
@@ -66,7 +68,11 @@ const initialState = {
 export const useUIStore = create<UIState>((set) => ({
   ...initialState,
 
-  play: () => set({ isPlaying: true }),
+  play: () =>
+    set((state) => ({
+      isPlaying: true,
+      playCount: state.playCount + 1,
+    })),
 
   pause: () => set({ isPlaying: false }),
 
@@ -79,6 +85,7 @@ export const useUIStore = create<UIState>((set) => ({
   togglePlayPause: () =>
     set((state) => ({
       isPlaying: !state.isPlaying,
+      playCount: !state.isPlaying ? state.playCount + 1 : state.playCount,
     })),
 
   setPlaybackSpeed: (speed) =>

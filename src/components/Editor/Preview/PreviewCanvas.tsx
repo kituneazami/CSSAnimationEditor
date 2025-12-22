@@ -12,6 +12,7 @@ export function PreviewCanvas() {
   const isPlaying = useUIStore((state) => state.isPlaying);
   const playbackSpeed = useUIStore((state) => state.playbackSpeed);
   const loop = useUIStore((state) => state.loop);
+  const playCount = useUIStore((state) => state.playCount);
   const pause = useUIStore((state) => state.pause);
 
   // Generate and inject CSS keyframes for all animations
@@ -135,7 +136,7 @@ export function PreviewCanvas() {
 
           return (
             <div
-              key={layer.id}
+              key={`${layer.id}-${playCount}`}
               className={clsx(
                 'absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2',
                 isSelected && 'ring-2 ring-primary-500'
