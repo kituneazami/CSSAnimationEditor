@@ -77,10 +77,11 @@ export const useUIStore = create<UIState>((set) => ({
   pause: () => set({ isPlaying: false }),
 
   stop: () =>
-    set({
+    set((state) => ({
       isPlaying: false,
       currentTime: 0,
-    }),
+      playCount: state.playCount + 1, // Reset to initial position by remounting
+    })),
 
   togglePlayPause: () =>
     set((state) => ({
