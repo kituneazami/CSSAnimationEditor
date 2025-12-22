@@ -7,9 +7,37 @@ interface ElementEditorProps {
 
 export function ElementEditor({ element, onChange }: ElementEditorProps) {
   const handleTypeChange = (type: ElementType) => {
+    // Reset styles based on type
+    let newStyles: React.CSSProperties = {};
+
+    switch (type) {
+      case 'box':
+        newStyles = {
+          width: '100px',
+          height: '100px',
+          backgroundColor: '#3b82f6',
+          borderRadius: '8px',
+        };
+        break;
+      case 'text':
+        newStyles = {
+          fontSize: '24px',
+          color: '#000000',
+          fontFamily: 'sans-serif',
+        };
+        break;
+      case 'image':
+        newStyles = {
+          width: '150px',
+          height: '150px',
+        };
+        break;
+    }
+
     onChange({
       ...element,
       type,
+      styles: newStyles,
       content: type === 'text' ? 'Sample Text' : '',
       imageUrl: type === 'image' ? '' : undefined,
     });
