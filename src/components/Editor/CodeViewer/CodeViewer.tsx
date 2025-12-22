@@ -6,7 +6,7 @@ export function CodeViewer() {
   const selectedAnimation = useAnimationStore((state) =>
     state.getSelectedAnimation()
   );
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const cssCode = selectedAnimation
