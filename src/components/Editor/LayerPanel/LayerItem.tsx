@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useLayerStore } from '@/store';
 import type { Layer } from '@/types';
 import clsx from 'clsx';
@@ -10,6 +10,7 @@ interface LayerItemProps {
 export function LayerItem({ layer }: LayerItemProps) {
   const selectedLayerId = useLayerStore((state) => state.selectedLayerId);
   const selectLayer = useLayerStore((state) => state.selectLayer);
+  const updateLayer = useLayerStore((state) => state.updateLayer);
   const toggleLayerVisibility = useLayerStore(
     (state) => state.toggleLayerVisibility
   );
@@ -19,7 +20,17 @@ export function LayerItem({ layer }: LayerItemProps) {
   const reorderLayers = useLayerStore((state) => state.reorderLayers);
 
   const [isDragOver, setIsDragOver] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingName, setEditingName] = useState(layer.name);
+  const inputRef = useRef<HTMLInputElement>(null);
   const isSelected = selectedLayerId === layer.id;
+
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isEditing]);
 
   const handleDragStart = (e: React.DragEvent) => {
     e.dataTransfer.effectAllowed = 'move';
@@ -47,6 +58,34 @@ export function LayerItem({ layer }: LayerItemProps) {
     }
   };
 
+  const startEditing = () => {
+    setIsEditing(true);
+    setEditingName(layer.name);
+  };
+
+  const saveEditing = () => {
+    const trimmedName = editingName.trim();
+    if (trimmedName && trimmedName !== layer.name) {
+      updateLayer(layer.id, { name: trimmedName });
+    }
+    setIsEditing(false);
+  };
+
+  const cancelEditing = () => {
+    setEditingName(layer.name);
+    setIsEditing(false);
+  };
+
+  const handleNameKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      saveEditing();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      cancelEditing();
+    }
+  };
+
   return (
     <div
       draggable
@@ -64,7 +103,29 @@ export function LayerItem({ layer }: LayerItemProps) {
       onClick={() => selectLayer(layer.id)}
     >
       <div className="flex items-center justify-between mb-2">
-        <span className="font-medium text-sm truncate">{layer.name}</span>
+        {isEditing ? (
+          <input
+            ref={inputRef}
+            type="text"
+            value={editingName}
+            onChange={(e) => setEditingName(e.target.value)}
+            onKeyDown={handleNameKeyDown}
+            onBlur={saveEditing}
+            onClick={(e) => e.stopPropagation()}
+            className="flex-1 font-medium text-sm px-1 py-0.5 border border-primary-400 rounded focus:outline-none focus:ring-1 focus:ring-primary-500"
+          />
+        ) : (
+          <span
+            className="font-medium text-sm truncate cursor-text"
+            onDoubleClick={(e) => {
+              e.stopPropagation();
+              startEditing();
+            }}
+            title="Double-click to edit"
+          >
+            {layer.name}
+          </span>
+        )}
         <div className="flex items-center gap-1">
           {/* Move up */}
           <button
