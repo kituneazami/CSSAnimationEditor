@@ -1,3 +1,4 @@
+import { useState, useRef } from 'react';
 import { useAnimationStore, useUIStore } from '@/store';
 import { TimelineRuler } from './TimelineRuler';
 import { Keyframe } from './Keyframe';
@@ -10,6 +11,9 @@ export function Timeline() {
   const timelineZoom = useUIStore((state) => state.timelineZoom);
   const selectedKeyframeId = useUIStore((state) => state.selectedKeyframeId);
   const selectKeyframe = useUIStore((state) => state.selectKeyframe);
+
+  const [selectedOffset, setSelectedOffset] = useState<number | null>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
 
   if (!selectedAnimation) {
     return (
@@ -26,11 +30,25 @@ export function Timeline() {
     );
   }
 
-  const handleAddKeyframe = (offset: number) => {
+  const handleAddKeyframe = () => {
+    const offset = selectedOffset !== null ? selectedOffset : 50;
     addKeyframe(selectedAnimation.id, {
       offset,
       properties: {},
     });
+    setSelectedOffset(null); // Reset after adding
+  };
+
+  const handleTrackClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!trackRef.current) return;
+
+    const rect = trackRef.current.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const offset = Math.round((clickX / rect.width) * 100);
+
+    // Clamp offset between 0 and 100
+    const clampedOffset = Math.max(0, Math.min(100, offset));
+    setSelectedOffset(clampedOffset);
   };
 
   return (
@@ -42,11 +60,16 @@ export function Timeline() {
             <span className="text-sm text-gray-600">
               Duration: {selectedAnimation.duration}ms
             </span>
+            {selectedOffset !== null && (
+              <span className="text-sm text-primary-600 font-medium">
+                Selected: {selectedOffset}%
+              </span>
+            )}
             <button
-              onClick={() => handleAddKeyframe(50)}
+              onClick={handleAddKeyframe}
               className="btn btn-primary text-sm px-3 py-1"
             >
-              Add Keyframe
+              Add Keyframe{selectedOffset !== null ? ` at ${selectedOffset}%` : ''}
             </button>
           </div>
         </div>
@@ -59,9 +82,24 @@ export function Timeline() {
           />
 
           {/* Keyframes track */}
-          <div className="relative h-16 bg-gray-50 border-b border-gray-200">
+          <div
+            ref={trackRef}
+            onClick={handleTrackClick}
+            className="relative h-16 bg-gray-50 border-b border-gray-200 cursor-crosshair"
+            title="Click to select position for new keyframe"
+          >
             {/* Track line */}
             <div className="absolute top-1/2 left-0 right-0 h-px bg-gray-300" />
+
+            {/* Selected position marker */}
+            {selectedOffset !== null && (
+              <div
+                className="absolute top-0 bottom-0 w-0.5 bg-primary-500 opacity-50 pointer-events-none"
+                style={{ left: `${selectedOffset}%` }}
+              >
+                <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 bg-primary-500 rounded-full border-2 border-white" />
+              </div>
+            )}
 
             {/* Keyframes */}
             {selectedAnimation.keyframes.map((keyframe) => (
